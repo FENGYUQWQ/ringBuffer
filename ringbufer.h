@@ -16,7 +16,8 @@ typedef struct
     unsigned int Head;
     unsigned int Tail;
     unsigned int Lenght;
-    QByteArray  Ring_data;
+    unsigned char *dataBuffer; /* 指向缓冲区的指针 */
+    //    QByteArray  Ring_data;
 }RingBuff_t;
 class ringbufer
 {
@@ -29,6 +30,8 @@ public:
     ringbufer();
 
     void RingBuffer_Init(RingBuff_t *ringbuffer);                                                               /*缓冲区初始化*/
+
+    void RingBuffer_DeInit(RingBuff_t *ringbuffer);
 
     unsigned char WriteOneByte_RingBuffer(  RingBuff_t *ringbuffer, char OneByteData);                 /*缓冲区写入一个字节*/
 
