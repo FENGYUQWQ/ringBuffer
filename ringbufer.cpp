@@ -65,14 +65,28 @@ unsigned char ringbufer::ReadOneByte_RingBuffer(RingBuff_t *ringbuffer,char *One
 
 unsigned char ringbufer::ReadBytes(RingBuff_t *ringbuffer,QByteArray* ReadData,unsigned int ReadLen)
 {
-    unsigned char err = RINGBUFF_OK;
+    unsigned char err = RINGBUFF_ERR;
     ReadData->resize(ReadLen);
-    for(unsigned int i=0;i<ReadLen;i++)
+    if(ringbuffer->Lenght < ReadLen)
     {
-        err = ReadOneByte_RingBuffer(ringbuffer,&ReadData->data()[i]);
-        if(err != RINGBUFF_OK)
+        return RINGBUFF_DATA_LOW;   /* 缓冲区数据不足 */
+    }
+    if(RINGBUFF_LEN - ringbuffer->Head > ringbuffer->Lenght ) /* 数据头到缓冲区末尾的长度大于数据长度*/
+    {
+        /* 因为缓冲区数据头的位置到缓冲区尾的长度 大于 缓冲区存储的有效数据长度 所以这里直接返回数据的地址，减少数据的复制次数，加快缓冲区读数据的速度，减少资源消耗 */
+        ReadData->data()[0] = ringbuffer->dataBuffer[ringbuffer->Head];
+        ringbuffer->Head = (ringbuffer->Head + ReadLen) % RINGBUFF_LEN;
+        ringbuffer->Lenght -= ReadLen;
+    }
+    else
+    {
+        for(unsigned int i=0;i<ReadLen;i++)
         {
-            return err;
+            err = ReadOneByte_RingBuffer(ringbuffer,&ReadData->data()[i]);
+            if(err != RINGBUFF_OK)
+            {
+                return err;
+            }
         }
 
     }
